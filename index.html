@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviator Demo – Fun Only</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0b0f14;color:#fff;font-family:Inter}
+.app{max-width:420px;margin:auto}
+
+/* TOP */
+.top{display:flex;justify-content:space-between;padding:12px;background:#111}
+.logo{font-weight:800;color:#ff2b55}
+.balance{color:#22c55e;font-weight:700}
+
+/* HISTORY */
+.results{display:flex;gap:8px;padding:8px 12px;overflow-x:auto}
+.results span{font-weight:800}
+.low{color:#ff4d4d}
+.mid{color:#38bdf8}
+.high{color:#c084fc}
+.mega{color:#22c55e}
+
+/* GAME */
+.game{
+  position:relative;
+  margin:10px;
+  background:radial-gradient(circle at bottom,#111,#000);
+  border-radius:18px;
+  padding:20px 10px 60px;
+  text-align:center;
+  overflow:hidden
+}
+.status{color:#aaa}
+.multi{font-size:56px;font-weight:800}
+.plane{
+  position:absolute;
+  left:-60px;
+  bottom:20px;
+  font-size:34px;
+  transform:rotate(18deg)
+}
+
+/* LIVE BETS */
+.live{
+  background:#0b0f14;
+  margin:10px;
+  border-radius:14px;
+  padding:8px;
+  border:1px solid #1f2937
+}
+.live h4{font-size:12px;color:#aaa;margin-bottom:6px}
+.live-list{max-height:120px;overflow:hidden}
+.live-item{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  padding:4px 0;
+  border-bottom:1px solid #111;
+}
+.win{color:#22c55e}
+.lose{color:#ff4d4d}
+
+/* BET */
+.betbox{background:#12161c;margin:10px;border-radius:16px;padding:10px}
+.bet{background:#0b0f14;border-radius:12px;padding:8px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center}
+.row input{width:70px;background:#111;border:none;color:#fff;padding:6px;border-radius:8px}
+.row button{width:28px;height:28px;border-radius:50%;border:none;background:#1f2937;color:#fff}
+.betbtn{
+  width:100%;margin-top:6px;
+  padding:12px;border:none;border-radius:12px;
+  font-weight:800
+}
+.green{background:#22c55e;color:#000}
+.yellow{background:#facc15;color:#000}
+
+/* SOUND */
+.sound{
+  background:#ff2b55;
+  padding:10px;
+  margin:10px;
+  border-radius:12px;
+  text-align:center;
+  font-weight:800;
+  cursor:pointer
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<div class="top">
+  <div class="logo">AVIATOR</div>
+  <div class="balance">PKR <span id="bal">5000</span></div>
+</div>
+
+<div class="results" id="history"></div>
+
+<div class="game">
+  <div class="status" id="status">WAITING</div>
+  <div class="multi" id="multi">1.00x</div>
+  <div class="plane" id="plane">✈️</div>
+</div>
+
+<div class="sound" id="soundBtn">🔊 ENABLE SOUND</div>
+
+<div class="betbox">
+
+<div class="bet">
+<b>BET A</b>
+<div class="row">
+<button onclick="chg('A',-100)">-</button>
+<span id="betA">100</span>
+<button onclick="chg('A',100)">+</button>
+<input id="autoA" placeholder="Auto x">
+</div>
+<button id="btnA" class="betbtn green" onclick="handleBet('A')">BET A</button>
+</div>
+
+<div class="bet">
+<b>BET B</b>
+<div class="row">
+<button onclick="chg('B',-100)">-</button>
+<span id="betB">100</span>
+<button onclick="chg('B',100)">+</button>
+<input id="autoB" placeholder="Auto x">
+</div>
+<button id="btnB" class="betbtn green" onclick="handleBet('B')">BET B</button>
+</div>
+
+</div>
+
+<div class="live">
+<h4>LIVE BETS</h4>
+<div class="live-list" id="live"></div>
+</div>
+
+</div>
+
+<audio id="fly" src="https://assets.mixkit.co/active_storage/sfx/2966/2966-preview.mp3"></audio>
+<audio id="cash" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
+<audio id="crash" src="https://assets.mixkit.co/active_storage/sfx/2747/2747-preview.mp3"></audio>
+
+<script>
+let balance=5000;
+let bets={A:100,B:100};
+let placed={A:false,B:false};
+let cashed={A:false,B:false};
+let autoX={A:null,B:null};
+let running=false;
+let mult=1, crash=0;
+let history=[];
+let sound=false;
+
+const fly=flyS=document.getElementById("fly");
+const cashS=document.getElementById("cash");
+const crashS=document.getElementById("crash");
+
+soundBtn.onclick=()=>{
+  flyS.play().then(()=>{
+    sound=true;
+    soundBtn.innerText="🔊 SOUND ON";
+  });
+};
+
+function chg(t,v){
+  if(running||placed[t])return;
+  bets[t]=Math.max(100,bets[t]+v);
+  document.getElementById("bet"+t).innerText=bets[t];
+}
+
+function handleBet(t){
+  if(running && !placed[t]) return;
+  if(running && placed[t] && !cashed[t]) return cashOut(t);
+
+  if(!running && !placed[t]){
+    if(bets[t]>balance)return alert("Low balance");
+    placed[t]=true;
+    cashed[t]=false;
+    autoX[t]=parseFloat(document.getElementById("auto"+t).value)||null;
+    balance-=bets[t];
+    updateUI();
+    document.getElementById("btn"+t).innerText="WAIT";
+  }
+}
+
+function cashOut(t){
+  cashed[t]=true;
+  let win=Math.floor(bets[t]*mult);
+  balance+=win;
+  document.getElementById("btn"+t).innerText="CASH "+win;
+  if(sound)cashS.play();
+  updateUI();
+}
+
+function generateCrash(){
+  const r=Math.random();
+  if(r<1/30) return rand(90,159);
+  if(r<1/15) return rand(20,25);
+  if(r<1/10) return rand(10,15);
+  if(r<1/5) return rand(5,7);
+  return rand(1.2,4.9);
+}
+
+function rand(a,b){return Math.random()*(b-a)+a;}
+
+function start(){
+  running=true;
+  mult=1;
+  crash=generateCrash();
+  status.innerText="FLYING";
+  if(sound)flyS.play();
+  tick();
+}
+
+function tick(){
+  if(!running)return;
+
+  if(mult<2) mult+=0.0025;
+  else if(mult<5) mult+=0.004;
+  else if(mult<10) mult+=0.006;
+  else if(mult<20) mult+=0.008;
+  else if(mult<50) mult+=0.01;
+  else mult+=0.012;
+
+  multi.innerText=mult.toFixed(2)+"x";
+  plane.style.left=(-60+Math.min(mult,25)*26)+"px";
+
+  ["A","B"].forEach(t=>{
+    if(placed[t] && !cashed[t]){
+      const b=document.getElementById("btn"+t);
+      b.className="betbtn yellow";
+      b.innerText="CASH "+Math.floor(bets[t]*mult);
+      if(autoX[t] && mult>=autoX[t]) cashOut(t);
+    }
+  });
+
+  if(mult>=crash){end();return;}
+  requestAnimationFrame(tick);
+}
+
+function end(){
+  running=false;
+  status.innerText="CRASH";
+  multi.innerText=crash.toFixed(2)+"x";
+  if(sound)crashS.play();
+
+  history.unshift(crash.toFixed(2)+"x");
+  if(history.length>15)history.pop();
+  renderHistory();
+
+  placed={A:false,B:false};
+  cashed={A:false,B:false};
+
+  setTimeout(wait,3000);
+}
+
+function wait(){
+  status.innerText="WAITING";
+  ["A","B"].forEach(t=>{
+    const b=document.getElementById("btn"+t);
+    b.innerText="BET "+t;
+    b.className="betbtn green";
+  });
+  setTimeout(start,3000);
+}
+
+function renderHistory(){
+  historyEl.innerHTML="";
+  history.forEach(x=>{
+    const v=parseFloat(x);
+    const s=document.createElement("span");
+    s.innerText=x;
+    if(v<1.5) s.className="low";
+    else if(v<2) s.className="mid";
+    else if(v<5) s.className="high";
+    else s.className="mega";
+    historyEl.appendChild(s);
+  });
+}
+
+function updateUI(){bal.innerText=balance}
+
+/* LIVE USERS (append at end) */
+const names=["Ali","Ahmed","Usman","Hamza","Bilal","Ayan","Zain","Saad","Huzaifa"];
+setInterval(()=>{
+  const n=names[Math.floor(Math.random()*names.length)];
+  const b=rand(100,900);
+  const m=rand(1.2,6).toFixed(2);
+  const win=Math.random()>0.45;
+
+  const d=document.createElement("div");
+  d.className="live-item "+(win?"win":"lose");
+  d.innerHTML=`<span>${n}</span><span>${win?"PKR "+Math.floor(b*m)+" @ "+m+"x":"Lost PKR "+b}</span>`;
+  live.appendChild(d);
+  if(live.children.length>8) live.removeChild(live.firstChild);
+},1600);
+
+const historyEl=document.getElementById("history");
+updateUI();
+wait();
+</script>
+</body>
+  </html>
