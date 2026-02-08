@@ -45,26 +45,6 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   transform:rotate(18deg)
 }
 
-/* LIVE BETS */
-.live{
-  background:#0b0f14;
-  margin:10px;
-  border-radius:14px;
-  padding:8px;
-  border:1px solid #1f2937
-}
-.live h4{font-size:12px;color:#aaa;margin-bottom:6px}
-.live-list{max-height:120px;overflow:hidden}
-.live-item{
-  display:flex;
-  justify-content:space-between;
-  font-size:13px;
-  padding:4px 0;
-  border-bottom:1px solid #111;
-}
-.win{color:#22c55e}
-.lose{color:#ff4d4d}
-
 /* BET */
 .betbox{background:#12161c;margin:10px;border-radius:16px;padding:10px}
 .bet{background:#0b0f14;border-radius:12px;padding:8px;margin-bottom:10px}
@@ -135,15 +115,12 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 </div>
 
 </div>
-
-<div class="live">
-<h4>LIVE BETS</h4>
-<div class="live-list" id="live"></div>
 </div>
 
-</div>
-
-<audio id="fly" src="https://assets.mixkit.co/active_storage/sfx/2966/2966-preview.mp3"></audio>
+<!-- 🎵 SOUNDS -->
+<audio id="fly" loop preload="auto">
+  <source src="avivator.mp3" type="audio/mpeg">
+</audio>
 <audio id="cash" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
 <audio id="crash" src="https://assets.mixkit.co/active_storage/sfx/2747/2747-preview.mp3"></audio>
 
@@ -158,11 +135,12 @@ let mult=1, crash=0;
 let history=[];
 let sound=false;
 
-const fly=flyS=document.getElementById("fly");
+const flyS=document.getElementById("fly");
 const cashS=document.getElementById("cash");
 const crashS=document.getElementById("crash");
 
 soundBtn.onclick=()=>{
+  flyS.volume=0.35;
   flyS.play().then(()=>{
     sound=true;
     soundBtn.innerText="🔊 SOUND ON";
@@ -176,7 +154,6 @@ function chg(t,v){
 }
 
 function handleBet(t){
-  if(running && !placed[t]) return;
   if(running && placed[t] && !cashed[t]) return cashOut(t);
 
   if(!running && !placed[t]){
@@ -207,7 +184,6 @@ function generateCrash(){
   if(r<1/5) return rand(5,7);
   return rand(1.2,4.9);
 }
-
 function rand(a,b){return Math.random()*(b-a)+a;}
 
 function start(){
@@ -215,20 +191,13 @@ function start(){
   mult=1;
   crash=generateCrash();
   status.innerText="FLYING";
-  if(sound)flyS.play();
+  if(sound){ flyS.currentTime=0; flyS.play(); }
   tick();
 }
 
 function tick(){
   if(!running)return;
-
-  if(mult<2) mult+=0.0025;
-  else if(mult<5) mult+=0.004;
-  else if(mult<10) mult+=0.006;
-  else if(mult<20) mult+=0.008;
-  else if(mult<50) mult+=0.01;
-  else mult+=0.012;
-
+  mult+=mult<2?0.0025:mult<5?0.004:mult<10?0.006:mult<20?0.008:0.01;
   multi.innerText=mult.toFixed(2)+"x";
   plane.style.left=(-60+Math.min(mult,25)*26)+"px";
 
@@ -241,7 +210,7 @@ function tick(){
     }
   });
 
-  if(mult>=crash){end();return;}
+  if(mult>=crash){ end(); return; }
   requestAnimationFrame(tick);
 }
 
@@ -249,7 +218,7 @@ function end(){
   running=false;
   status.innerText="CRASH";
   multi.innerText=crash.toFixed(2)+"x";
-  if(sound)crashS.play();
+  if(sound){ flyS.pause(); crashS.play(); }
 
   history.unshift(crash.toFixed(2)+"x");
   if(history.length>15)history.pop();
@@ -277,34 +246,15 @@ function renderHistory(){
     const v=parseFloat(x);
     const s=document.createElement("span");
     s.innerText=x;
-    if(v<1.5) s.className="low";
-    else if(v<2) s.className="mid";
-    else if(v<5) s.className="high";
-    else s.className="mega";
+    s.className=v<1.5?"low":v<2?"mid":v<5?"high":"mega";
     historyEl.appendChild(s);
   });
 }
 
 function updateUI(){bal.innerText=balance}
-
-/* LIVE USERS (append at end) */
-const names=["Ali","Ahmed","Usman","Hamza","Bilal","Ayan","Zain","Saad","Huzaifa"];
-setInterval(()=>{
-  const n=names[Math.floor(Math.random()*names.length)];
-  const b=rand(100,900);
-  const m=rand(1.2,6).toFixed(2);
-  const win=Math.random()>0.45;
-
-  const d=document.createElement("div");
-  d.className="live-item "+(win?"win":"lose");
-  d.innerHTML=`<span>${n}</span><span>${win?"PKR "+Math.floor(b*m)+" @ "+m+"x":"Lost PKR "+b}</span>`;
-  live.appendChild(d);
-  if(live.children.length>8) live.removeChild(live.firstChild);
-},1600);
-
 const historyEl=document.getElementById("history");
 updateUI();
 wait();
 </script>
 </body>
-</html>
+    </html>
