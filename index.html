@@ -17,8 +17,13 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 .logo{font-weight:800;color:#ff2b55}
 .balance{color:#22c55e;font-weight:700}
 
-/* HISTORY */
-.results{display:flex;gap:8px;padding:8px 12px;overflow-x:auto}
+/* HISTORY (2 LINES) */
+.results{
+  display:grid;
+  grid-template-columns:repeat(8,auto);
+  gap:6px;
+  padding:8px 12px;
+}
 .results span{font-weight:800}
 .low{color:#ff4d4d}
 .mid{color:#38bdf8}
@@ -33,7 +38,7 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   border-radius:18px;
   padding:20px 10px 60px;
   text-align:center;
-  overflow:hidden
+  overflow:hidden;
 }
 .status{color:#aaa}
 .multi{font-size:56px;font-weight:800}
@@ -42,12 +47,25 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   left:-60px;
   bottom:20px;
   font-size:34px;
-  transform:rotate(18deg)
+  transform:rotate(18deg);
 }
 .countdown{
   font-size:42px;
   font-weight:800;
   color:#facc15;
+}
+
+/* CRASH EFFECT */
+.crash-effect{
+  animation:crashFlash .15s infinite;
+}
+@keyframes crashFlash{
+  0%{color:#ff4d4d;transform:scale(1)}
+  50%{color:#ff0000;transform:scale(1.06)}
+  100%{color:#ff4d4d;transform:scale(1)}
+}
+.game.crashed{
+  box-shadow:0 0 25px #ff0000;
 }
 
 /* BET */
@@ -59,7 +77,7 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 .betbtn{
   width:100%;margin-top:6px;
   padding:12px;border:none;border-radius:12px;
-  font-weight:800
+  font-weight:800;
 }
 .green{background:#22c55e;color:#000}
 .yellow{background:#facc15;color:#000}
@@ -72,10 +90,10 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   border-radius:12px;
   text-align:center;
   font-weight:800;
-  cursor:pointer
+  cursor:pointer;
 }
 
-/* LIVE BETS (BOTTOM) */
+/* LIVE BETS BOTTOM */
 .live{
   background:#111722;
   margin:20px 10px 30px;
@@ -86,10 +104,6 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   font-size:13px;
   color:#9aa4b2;
   margin-bottom:8px;
-}
-.live-list{
-  max-height:180px;
-  overflow:hidden;
 }
 .live-item{
   display:flex;
@@ -113,7 +127,7 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 
 <div class="results" id="history"></div>
 
-<div class="game">
+<div class="game" id="game">
   <div class="status" id="status">WAITING</div>
   <div class="multi" id="multi">1.00x</div>
   <div class="plane" id="plane">✈️</div>
@@ -122,7 +136,6 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 <div class="sound" id="soundBtn">🔊 ENABLE SOUND</div>
 
 <div class="betbox">
-
 <div class="bet">
 <b>BET A</b>
 <div class="row">
@@ -144,64 +157,46 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 </div>
 <button id="btnB" class="betbtn green" onclick="handleBet('B')">BET B</button>
 </div>
-
 </div>
 
-<!-- ✅ LIVE BETS – PAGE END -->
+<!-- LIVE BETS -->
 <div class="live">
-  <h4>LIVE BETS</h4>
-  <div class="live-list" id="live"></div>
+<h4>LIVE BETS</h4>
+<div id="live"></div>
 </div>
 
 </div>
 
 <!-- SOUNDS -->
 <audio id="fly" loop preload="auto"><source src="avivator.mp3"></audio>
-<audio id="cash" src="cashout.mp3"></audio>
 <audio id="crash" src="crash.mp3"></audio>
 
 <script>
 /* LIVE FAKE USERS */
 const live=document.getElementById("live");
-const names=["Ali","Ahmed","Usman","Hamza","Bilal","Zain","Saad","Ayan","Fahad","Imran","Arslan","Danish","Waqas"];
-
+const names=["Ali","Ahmed","Usman","Hamza","Bilal","Zain","Saad","Ayan","Fahad","Imran"];
 setInterval(()=>{
-  const name=names[Math.floor(Math.random()*names.length)];
+  const n=names[Math.floor(Math.random()*names.length)];
   const bet=Math.floor(Math.random()*2000)+200;
-  const multi=(Math.random()*4+1.2).toFixed(2);
+  const m=(Math.random()*4+1.2).toFixed(2);
   const win=Math.random()>0.45;
-
   const d=document.createElement("div");
   d.className="live-item "+(win?"win":"lose");
-  d.innerHTML=`
-    <span>${name}</span>
-    <span>${win ? "PKR "+(bet*multi).toFixed(0)+" @"+multi+"x" : "Lost PKR "+bet}</span>
-  `;
+  d.innerHTML=`<span>${n}</span><span>${win?"PKR "+(bet*m).toFixed(0)+" @"+m+"x":"Lost PKR "+bet}</span>`;
   live.appendChild(d);
-  if(live.children.length>8) live.removeChild(live.firstChild);
+  if(live.children.length>8)live.removeChild(live.firstChild);
 },1800);
 
-/* AVIATOR GAME (ORIGINAL) */
-let balance=5000;
-let bets={A:100,B:100};
-let placed={A:false,B:false};
-let cashed={A:false,B:false};
-let autoX={A:null,B:null};
-let running=false;
-let mult=1, crash=0;
-let history=[];
-let sound=false;
+/* GAME */
+let balance=5000,bets={A:100,B:100},placed={A:false,B:false},cashed={A:false,B:false};
+let autoX={A:null,B:null},running=false,mult=1,crash=0,history=[],sound=false;
 
 const flyS=document.getElementById("fly");
-const cashS=document.getElementById("cash");
 const crashS=document.getElementById("crash");
 
 soundBtn.onclick=()=>{
-  flyS.volume=0.35;
-  flyS.play().then(()=>{
-    sound=true;
-    soundBtn.innerText="🔊 SOUND ON";
-  });
+  flyS.volume=.35;
+  flyS.play().then(()=>{sound=true;soundBtn.innerText="🔊 SOUND ON";});
 };
 
 function chg(t,v){
@@ -211,14 +206,12 @@ function chg(t,v){
 }
 
 function handleBet(t){
-  if(running && placed[t] && !cashed[t]) return cashOut(t);
+  if(running && placed[t] && !cashed[t])return cashOut(t);
   if(!running && !placed[t]){
     if(bets[t]>balance)return alert("Low balance");
-    placed[t]=true;
-    cashed[t]=false;
+    placed[t]=true;cashed[t]=false;
     autoX[t]=parseFloat(document.getElementById("auto"+t).value)||null;
-    balance-=bets[t];
-    updateUI();
+    balance-=bets[t];updateUI();
     document.getElementById("btn"+t).innerText="WAIT";
   }
 }
@@ -229,48 +222,41 @@ function cashOut(t){
   let win=Math.floor(bets[t]*mult);
   balance+=win;
   document.getElementById("btn"+t).innerText="CASH "+win;
-  if(sound){
-    const s=cashS.cloneNode();
-    s.play();
-  }
+  if(sound){ new Audio("cashout.mp3").play(); }
   updateUI();
 }
 
 function generateCrash(){
   const r=Math.random();
-  if(r<1/30) return rand(90,159);
-  if(r<1/15) return rand(20,25);
-  if(r<1/10) return rand(10,15);
-  if(r<1/5) return rand(5,7);
+  if(r<1/30)return rand(90,159);
+  if(r<1/15)return rand(20,25);
+  if(r<1/10)return rand(10,15);
+  if(r<1/5)return rand(5,7);
   return rand(1.2,4.9);
 }
-function rand(a,b){return Math.random()*(b-a)+a;}
+const rand=(a,b)=>Math.random()*(b-a)+a;
 
 function start(){
-  running=true;
-  mult=1;
-  crash=generateCrash();
+  running=true;mult=1;crash=generateCrash();
   status.innerText="FLYING";
-  if(sound){ flyS.currentTime=0; flyS.play(); }
+  if(sound){flyS.currentTime=0;flyS.play();}
   tick();
 }
 
 function tick(){
   if(!running)return;
-  mult+=mult<2?0.0025:mult<5?0.004:mult<10?0.006:mult<20?0.008:0.01;
+  mult+=mult<2?.0025:mult<5?.004:mult<10?.006:mult<20?.008:.01;
   multi.innerText=mult.toFixed(2)+"x";
   plane.style.left=(-60+Math.min(mult,25)*26)+"px";
-
   ["A","B"].forEach(t=>{
-    if(placed[t] && !cashed[t]){
+    if(placed[t]&&!cashed[t]){
       const b=document.getElementById("btn"+t);
       b.className="betbtn yellow";
       b.innerText="CASH "+Math.floor(bets[t]*mult);
-      if(autoX[t] && mult>=autoX[t]) cashOut(t);
+      if(autoX[t]&&mult>=autoX[t])cashOut(t);
     }
   });
-
-  if(mult>=crash){ end(); return; }
+  if(mult>=crash)return end();
   requestAnimationFrame(tick);
 }
 
@@ -278,26 +264,27 @@ function end(){
   running=false;
   status.innerText="CRASH";
   multi.innerText=crash.toFixed(2)+"x";
-  if(sound){ flyS.pause(); crashS.play(); }
-
+  multi.classList.add("crash-effect");
+  game.classList.add("crashed");
+  if(sound){flyS.pause();crashS.play();}
   history.unshift(crash.toFixed(2)+"x");
   if(history.length>15)history.pop();
   renderHistory();
-
-  placed={A:false,B:false};
-  cashed={A:false,B:false};
-
-  setTimeout(wait,1000);
+  placed={A:false,B:false};cashed={A:false,B:false};
+  setTimeout(()=>{
+    multi.classList.remove("crash-effect");
+    game.classList.remove("crashed");
+    wait();
+  },1200);
 }
 
 function wait(){
-  let c=3;
-  const int=setInterval(()=>{
+  let c=6;
+  const i=setInterval(()=>{
     status.innerText="START IN "+c;
     multi.innerHTML="<span class='countdown'>"+c+"</span>";
-    c--;
-    if(c<0){
-      clearInterval(int);
+    if(--c<0){
+      clearInterval(i);
       status.innerText="WAITING";
       multi.innerText="1.00x";
       ["A","B"].forEach(t=>{
@@ -322,8 +309,7 @@ function renderHistory(){
 }
 function updateUI(){bal.innerText=balance}
 const historyEl=document.getElementById("history");
-updateUI();
-wait();
+updateUI();wait();
 </script>
 </body>
-  </html>
+</html>
