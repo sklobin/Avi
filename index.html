@@ -44,6 +44,11 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   font-size:34px;
   transform:rotate(18deg)
 }
+.countdown{
+  font-size:42px;
+  font-weight:800;
+  color:#facc15;
+}
 
 /* BET */
 .betbox{background:#12161c;margin:10px;border-radius:16px;padding:10px}
@@ -117,12 +122,12 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 </div>
 </div>
 
-<!-- 🎵 SOUNDS -->
+<!-- SOUNDS -->
 <audio id="fly" loop preload="auto">
   <source src="avivator.mp3" type="audio/mpeg">
 </audio>
 <audio id="cash" src="cashout.mp3"></audio>
-<audio id="crash" src="https://assets.mixkit.co/active_storage/sfx/2747/2747-preview.mp3"></audio>
+<audio id="crash" src="crash.mp3"></audio>
 
 <script>
 let balance=5000;
@@ -172,7 +177,7 @@ function cashOut(t){
   let win=Math.floor(bets[t]*mult);
   balance+=win;
   document.getElementById("btn"+t).innerText="CASH "+win;
-  if(sound)cashS.play();
+  if(sound) cashS.play();   // ✅ FIX: A & B dono pe sound
   updateUI();
 }
 
@@ -191,6 +196,7 @@ function start(){
   mult=1;
   crash=generateCrash();
   status.innerText="FLYING";
+  multi.style.color="#fff";
   if(sound){ flyS.currentTime=0; flyS.play(); }
   tick();
 }
@@ -218,6 +224,7 @@ function end(){
   running=false;
   status.innerText="CRASH";
   multi.innerText=crash.toFixed(2)+"x";
+  multi.style.color="#ff4d4d";   // ✅ CRASH COLOR
   if(sound){ flyS.pause(); crashS.play(); }
 
   history.unshift(crash.toFixed(2)+"x");
@@ -227,17 +234,27 @@ function end(){
   placed={A:false,B:false};
   cashed={A:false,B:false};
 
-  setTimeout(wait,3000);
+  setTimeout(wait,1000);
 }
 
 function wait(){
-  status.innerText="WAITING";
-  ["A","B"].forEach(t=>{
-    const b=document.getElementById("btn"+t);
-    b.innerText="BET "+t;
-    b.className="betbtn green";
-  });
-  setTimeout(start,3000);
+  let c=7;
+  const int=setInterval(()=>{
+    status.innerText="START IN "+c;
+    multi.innerHTML="<span class='countdown'>"+c+"</span>";
+    c--;
+    if(c<0){
+      clearInterval(int);
+      status.innerText="WAITING";
+      multi.innerText="1.00x";
+      ["A","B"].forEach(t=>{
+        const b=document.getElementById("btn"+t);
+        b.innerText="BET "+t;
+        b.className="betbtn green";
+      });
+      setTimeout(start,1000);
+    }
+  },1000);
 }
 
 function renderHistory(){
@@ -257,4 +274,4 @@ updateUI();
 wait();
 </script>
 </body>
-    </html>
+  </html>
