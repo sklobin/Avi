@@ -74,6 +74,32 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   font-weight:800;
   cursor:pointer
 }
+
+/* LIVE BETS (BOTTOM) */
+.live{
+  background:#111722;
+  margin:20px 10px 30px;
+  border-radius:16px;
+  padding:10px;
+}
+.live h4{
+  font-size:13px;
+  color:#9aa4b2;
+  margin-bottom:8px;
+}
+.live-list{
+  max-height:180px;
+  overflow:hidden;
+}
+.live-item{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  padding:6px 0;
+  border-bottom:1px solid #1c2433;
+}
+.win{color:#22c55e}
+.lose{color:#ff4d4d}
 </style>
 </head>
 
@@ -120,16 +146,42 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 </div>
 
 </div>
+
+<!-- ✅ LIVE BETS – PAGE END -->
+<div class="live">
+  <h4>LIVE BETS</h4>
+  <div class="live-list" id="live"></div>
+</div>
+
 </div>
 
 <!-- SOUNDS -->
-<audio id="fly" loop preload="auto">
-  <source src="avivator.mp3" type="audio/mpeg">
-</audio>
+<audio id="fly" loop preload="auto"><source src="avivator.mp3"></audio>
 <audio id="cash" src="cashout.mp3"></audio>
 <audio id="crash" src="crash.mp3"></audio>
 
 <script>
+/* LIVE FAKE USERS */
+const live=document.getElementById("live");
+const names=["Ali","Ahmed","Usman","Hamza","Bilal","Zain","Saad","Ayan","Fahad","Imran","Arslan","Danish","Waqas"];
+
+setInterval(()=>{
+  const name=names[Math.floor(Math.random()*names.length)];
+  const bet=Math.floor(Math.random()*2000)+200;
+  const multi=(Math.random()*4+1.2).toFixed(2);
+  const win=Math.random()>0.45;
+
+  const d=document.createElement("div");
+  d.className="live-item "+(win?"win":"lose");
+  d.innerHTML=`
+    <span>${name}</span>
+    <span>${win ? "PKR "+(bet*multi).toFixed(0)+" @"+multi+"x" : "Lost PKR "+bet}</span>
+  `;
+  live.appendChild(d);
+  if(live.children.length>8) live.removeChild(live.firstChild);
+},1800);
+
+/* AVIATOR GAME (ORIGINAL) */
 let balance=5000;
 let bets={A:100,B:100};
 let placed={A:false,B:false};
@@ -160,7 +212,6 @@ function chg(t,v){
 
 function handleBet(t){
   if(running && placed[t] && !cashed[t]) return cashOut(t);
-
   if(!running && !placed[t]){
     if(bets[t]>balance)return alert("Low balance");
     placed[t]=true;
@@ -173,11 +224,15 @@ function handleBet(t){
 }
 
 function cashOut(t){
+  if(cashed[t])return;
   cashed[t]=true;
   let win=Math.floor(bets[t]*mult);
   balance+=win;
   document.getElementById("btn"+t).innerText="CASH "+win;
-  if(sound) cashS.play();   // ✅ FIX: A & B dono pe sound
+  if(sound){
+    const s=cashS.cloneNode();
+    s.play();
+  }
   updateUI();
 }
 
@@ -196,7 +251,6 @@ function start(){
   mult=1;
   crash=generateCrash();
   status.innerText="FLYING";
-  multi.style.color="#fff";
   if(sound){ flyS.currentTime=0; flyS.play(); }
   tick();
 }
@@ -224,7 +278,6 @@ function end(){
   running=false;
   status.innerText="CRASH";
   multi.innerText=crash.toFixed(2)+"x";
-  multi.style.color="#ff4d4d";   // ✅ CRASH COLOR
   if(sound){ flyS.pause(); crashS.play(); }
 
   history.unshift(crash.toFixed(2)+"x");
@@ -238,7 +291,7 @@ function end(){
 }
 
 function wait(){
-  let c=7;
+  let c=3;
   const int=setInterval(()=>{
     status.innerText="START IN "+c;
     multi.innerHTML="<span class='countdown'>"+c+"</span>";
@@ -267,7 +320,6 @@ function renderHistory(){
     historyEl.appendChild(s);
   });
 }
-
 function updateUI(){bal.innerText=balance}
 const historyEl=document.getElementById("history");
 updateUI();
