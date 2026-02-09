@@ -174,7 +174,22 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 <script>
 /* LIVE FAKE USERS */
 const live=document.getElementById("live");
-const names=["Ali","Ahmed","Usman","Hamza","Bilal","Zain","Saad","Ayan","Fahad","Imran"];
+const players = [
+  "Ali","Ahmed","Usman","Hamza","Bilal","Zain","Saad","Ayan","Fahad","Imran",
+  "Hassan","Hussain","Danish","Arslan","Shahzaib","Abdullah","Umer","Talha","Sameer","Azhar",
+  "Asad","Noman","Farhan","Rehan","Salman","Kashif","Waqas","Sohail","Adnan","Shahid",
+  "Ibrahim","Muneeb","Rizwan","Faizan","Adeel","Sheryar","Affan","Taha","Huzaifa","Zubair",
+  "Kamil","Naveed","Junaid","Sami","Yasir","Ahsan","Mudassir","Raheel","Faisal","Owais",
+
+  "User 1234561","User 1234562","User 1234563","User 1234564","User 1234565",
+  "User 1234566","User 1234567","User 1234568","User 1234569","User 1234570",
+  "User 1234571","User 1234572","User 1234573","User 1234574","User 1234575",
+  "User 1234576","User 1234577","User 1234578","User 1234579","User 1234580",
+  "User 1234581","User 1234582","User 1234583","User 1234584","User 1234585",
+  "User 1234586","User 1234587","User 1234588","User 1234589","User 1234590",
+  "User 1234591","User 1234592","User 1234593","User 1234594","User 1234595",
+  "User 1234596","User 1234597","User 1234598","User 1234599","User 1234600"
+];
 setInterval(()=>{
   const n=names[Math.floor(Math.random()*names.length)];
   const bet=Math.floor(Math.random()*2000)+200;
