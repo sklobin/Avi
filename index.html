@@ -229,9 +229,10 @@ function cashOut(t){
 function generateCrash(){
   const r=Math.random();
   if(r<1/30)return rand(90,159);
-  if(r<1/15)return rand(20,25);
-  if(r<1/10)return rand(10,15);
-  if(r<1/5)return rand(5,7);
+  if(r<3/30)return rand(50,60);
+  if(r<6/30)return rand(4,15);
+  if(r<8/30)return rand(3,9);
+  if(r<10/30)return rand(1,2);
   return rand(1.2,4.9);
 }
 const rand=(a,b)=>Math.random()*(b-a)+a;
