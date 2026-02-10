@@ -130,7 +130,7 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 <div class="game" id="game">
   <div class="status" id="status">WAITING</div>
   <div class="multi" id="multi">1.00x</div>
-  <div class="plane" id="plane">✈️</div>
+  <div class="plane" id="plane">🛩️</div>
 </div>
 
 <div class="sound" id="soundBtn">🔊 ENABLE SOUND</div>
@@ -139,9 +139,9 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 <div class="bet">
 <b>BET A</b>
 <div class="row">
-<button onclick="chg('A',-100)">-</button>
-<span id="betA">100</span>
-<button onclick="chg('A',100)">+</button>
+<button onclick="chg('A',-10)">-</button>
+<span id="betA">10</span>
+<button onclick="chg('A',10)">+</button>
 <input id="autoA" placeholder="Auto x">
 </div>
 <button id="btnA" class="betbtn green" onclick="handleBet('A')">BET A</button>
@@ -150,9 +150,9 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 <div class="bet">
 <b>BET B</b>
 <div class="row">
-<button onclick="chg('B',-100)">-</button>
-<span id="betB">100</span>
-<button onclick="chg('B',100)">+</button>
+<button onclick="chg('B',-10)">-</button>
+<span id="betB">10</span>
+<button onclick="chg('B',10)">+</button>
 <input id="autoB" placeholder="Auto x">
 </div>
 <button id="btnB" class="betbtn green" onclick="handleBet('B')">BET B</button>
@@ -203,7 +203,7 @@ setInterval(()=>{
 },1800);
 
 /* GAME */
-let balance=5000,bets={A:100,B:100},placed={A:false,B:false},cashed={A:false,B:false};
+let balance=500,bets={A:10,B:10},placed={A:false,B:false},cashed={A:false,B:false};
 let autoX={A:null,B:null},running=false,mult=1,crash=0,history=[],sound=false;
 
 const flyS=document.getElementById("fly");
@@ -245,9 +245,9 @@ function generateCrash(){
   const r=Math.random();
   if(r<1/30)return rand(90,159);
   if(r<3/30)return rand(50,60);
-  if(r<6/30)return rand(4,15);
-  if(r<8/30)return rand(3,9);
-  if(r<10/30)return rand(1,2);
+  if(r<5/30)return rand(4,15);
+  if(r<7/30)return rand(3,9);
+  if(r<12/30)return rand(1,2);
   return rand(1.2,4.9);
 }
 const rand=(a,b)=>Math.random()*(b-a)+a;
