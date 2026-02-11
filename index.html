@@ -17,13 +17,8 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 .logo{font-weight:800;color:#ff2b55}
 .balance{color:#22c55e;font-weight:700}
 
-/* HISTORY (2 LINES) */
-.results{
-  display:grid;
-  grid-template-columns:repeat(8,auto);
-  gap:6px;
-  padding:8px 12px;
-}
+/* HISTORY */
+.results{display:flex;gap:8px;padding:8px 12px;overflow-x:auto}
 .results span{font-weight:800}
 .low{color:#ff4d4d}
 .mid{color:#38bdf8}
@@ -38,7 +33,7 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   border-radius:18px;
   padding:20px 10px 60px;
   text-align:center;
-  overflow:hidden;
+  overflow:hidden
 }
 .status{color:#aaa}
 .multi{font-size:56px;font-weight:800}
@@ -47,7 +42,7 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   left:-60px;
   bottom:20px;
   font-size:34px;
-  transform:rotate(18deg);
+  transform:rotate(18deg)
 }
 .countdown{
   font-size:42px;
@@ -55,18 +50,25 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   color:#facc15;
 }
 
-/* CRASH EFFECT */
-.crash-effect{
-  animation:crashFlash .15s infinite;
+/* LIVE */
+.live{
+  background:#0b0f14;
+  margin:10px;
+  border-radius:14px;
+  padding:8px;
+  border:1px solid #1f2937
 }
-@keyframes crashFlash{
-  0%{color:#ff4d4d;transform:scale(1)}
-  50%{color:#ff0000;transform:scale(1.06)}
-  100%{color:#ff4d4d;transform:scale(1)}
+.live h4{font-size:12px;color:#aaa;margin-bottom:6px}
+.live-list{max-height:120px;overflow:hidden}
+.live-item{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  padding:4px 0;
+  border-bottom:1px solid #111;
 }
-.game.crashed{
-  box-shadow:0 0 25px #ff0000;
-}
+.win{color:#22c55e}
+.lose{color:#ff4d4d}
 
 /* BET */
 .betbox{background:#12161c;margin:10px;border-radius:16px;padding:10px}
@@ -75,9 +77,12 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 .row input{width:70px;background:#111;border:none;color:#fff;padding:6px;border-radius:8px}
 .row button{width:28px;height:28px;border-radius:50%;border:none;background:#1f2937;color:#fff}
 .betbtn{
-  width:100%;margin-top:6px;
-  padding:12px;border:none;border-radius:12px;
-  font-weight:800;
+  width:100%;
+  margin-top:6px;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-weight:800
 }
 .green{background:#22c55e;color:#000}
 .yellow{background:#facc15;color:#000}
@@ -90,30 +95,8 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
   border-radius:12px;
   text-align:center;
   font-weight:800;
-  cursor:pointer;
+  cursor:pointer
 }
-
-/* LIVE BETS BOTTOM */
-.live{
-  background:#111722;
-  margin:20px 10px 30px;
-  border-radius:16px;
-  padding:10px;
-}
-.live h4{
-  font-size:13px;
-  color:#9aa4b2;
-  margin-bottom:8px;
-}
-.live-item{
-  display:flex;
-  justify-content:space-between;
-  font-size:12px;
-  padding:6px 0;
-  border-bottom:1px solid #1c2433;
-}
-.win{color:#22c55e}
-.lose{color:#ff4d4d}
 </style>
 </head>
 
@@ -122,12 +105,12 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 
 <div class="top">
   <div class="logo">AVIATOR</div>
-  <div class="balance">PKR <span id="bal">5000</span></div>
+  <div class="balance">PKR <span id="bal">500</span></div>
 </div>
 
 <div class="results" id="history"></div>
 
-<div class="game" id="game">
+<div class="game">
   <div class="status" id="status">WAITING</div>
   <div class="multi" id="multi">1.00x</div>
   <div class="plane" id="plane">🛩️</div>
@@ -136,6 +119,7 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 <div class="sound" id="soundBtn">🔊 ENABLE SOUND</div>
 
 <div class="betbox">
+
 <div class="bet">
 <b>BET A</b>
 <div class="row">
@@ -157,122 +141,123 @@ body{background:#0b0f14;color:#fff;font-family:Inter}
 </div>
 <button id="btnB" class="betbtn green" onclick="handleBet('B')">BET B</button>
 </div>
+
 </div>
 
-<!-- LIVE BETS -->
 <div class="live">
 <h4>LIVE BETS</h4>
-<div id="live"></div>
+<div class="live-list" id="live"></div>
 </div>
 
 </div>
 
-<!-- SOUNDS -->
-<audio id="fly" loop preload="auto"><source src="avivator.mp3"></audio>
-<audio id="crash" src="crash.mp3"></audio>
+<audio id="fly" src="https://assets.mixkit.co/active_storage/sfx/2966/2966-preview.mp3"></audio>
+<audio id="cash" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
+<audio id="crash" src="https://assets.mixkit.co/active_storage/sfx/2747/2747-preview.mp3"></audio>
 
 <script>
-/* LIVE FAKE USERS */
+/* DOM */
+const bal=document.getElementById("bal");
+const status=document.getElementById("status");
+const multi=document.getElementById("multi");
+const plane=document.getElementById("plane");
+const historyEl=document.getElementById("history");
 const live=document.getElementById("live");
-const players = [
-  "Ali","Ahmed","Usman","Hamza","Bilal","Zain","Saad","Ayan","Fahad","Imran",
-  "Hassan","Hussain","Danish","Arslan","Shahzaib","Abdullah","Umer","Talha","Sameer","Azhar",
-  "Asad","Noman","Farhan","Rehan","Salman","Kashif","Waqas","Sohail","Adnan","Shahid",
-  "Ibrahim","Muneeb","Rizwan","Faizan","Adeel","Sheryar","Affan","Taha","Huzaifa","Zubair",
-  "Kamil","Naveed","Junaid","Sami","Yasir","Ahsan","Mudassir","Raheel","Faisal","Owais",
+const soundBtn=document.getElementById("soundBtn");
 
-  "User 1234561","User 1234562","User 1234563","User 1234564","User 1234565",
-  "User 1234566","User 1234567","User 1234568","User 1234569","User 1234570",
-  "User 1234571","User 1234572","User 1234573","User 1234574","User 1234575",
-  "User 1234576","User 1234577","User 1234578","User 1234579","User 1234580",
-  "User 1234581","User 1234582","User 1234583","User 1234584","User 1234585",
-  "User 1234586","User 1234587","User 1234588","User 1234589","User 1234590",
-  "User 1234591","User 1234592","User 1234593","User 1234594","User 1234595",
-  "User 1234596","User 1234597","User 1234598","User 1234599","User 1234600"
-];
-setInterval(()=>{
-  const n=names[Math.floor(Math.random()*names.length)];
-  const bet=Math.floor(Math.random()*2000)+200;
-  const m=(Math.random()*4+1.2).toFixed(2);
-  const win=Math.random()>0.45;
-  const d=document.createElement("div");
-  d.className="live-item "+(win?"win":"lose");
-  d.innerHTML=`<span>${n}</span><span>${win?"PKR "+(bet*m).toFixed(0)+" @"+m+"x":"Lost PKR "+bet}</span>`;
-  live.appendChild(d);
-  if(live.children.length>8)live.removeChild(live.firstChild);
-},1800);
+/* STATE */
+let balance=500;
+let bets={A:10,B:10};
+let placed={A:false,B:false};
+let cashed={A:false,B:false};
+let autoX={A:null,B:null};
+let running=false;
+let mult=1, crash=0;
+let history=[];
+let sound=false;
 
-/* GAME */
-let balance=500,bets={A:10,B:10},placed={A:false,B:false},cashed={A:false,B:false};
-let autoX={A:null,B:null},running=false,mult=1,crash=0,history=[],sound=false;
-
+/* AUDIO */
 const flyS=document.getElementById("fly");
+const cashS=document.getElementById("cash");
 const crashS=document.getElementById("crash");
 
+/* SOUND */
 soundBtn.onclick=()=>{
-  flyS.volume=.35;
-  flyS.play().then(()=>{sound=true;soundBtn.innerText="🔊 SOUND ON";});
+  flyS.play().then(()=>{
+    sound=true;
+    soundBtn.innerText="🔊 SOUND ON";
+  }).catch(()=>{});
 };
 
 function chg(t,v){
   if(running||placed[t])return;
-  bets[t]=Math.max(100,bets[t]+v);
+  bets[t]=Math.max(10,bets[t]+v);
   document.getElementById("bet"+t).innerText=bets[t];
 }
 
 function handleBet(t){
-  if(running && placed[t] && !cashed[t])return cashOut(t);
-  if(!running && !placed[t]){
-    if(bets[t]>balance)return alert("Low balance");
-    placed[t]=true;cashed[t]=false;
-    autoX[t]=parseFloat(document.getElementById("auto"+t).value)||null;
-    balance-=bets[t];updateUI();
-    document.getElementById("btn"+t).innerText="WAIT";
-  }
+  if(running && placed[t] && !cashed[t]) return cashOut(t);
+  if(running) return;
+
+  if(bets[t]>balance) return alert("Low balance");
+
+  placed[t]=true;
+  cashed[t]=false;
+  autoX[t]=parseFloat(document.getElementById("auto"+t).value)||null;
+  balance-=bets[t];
+  updateUI();
+  document.getElementById("btn"+t).innerText="WAIT";
 }
 
 function cashOut(t){
-  if(cashed[t])return;
+  if(cashed[t]) return;
   cashed[t]=true;
-  let win=Math.floor(bets[t]*mult);
+  const win=Math.floor(bets[t]*mult);
   balance+=win;
   document.getElementById("btn"+t).innerText="CASH "+win;
-  if(sound){ new Audio("cashout.mp3").play(); }
+  if(sound) cashS.play();
   updateUI();
 }
+
+function rand(a,b){return Math.random()*(b-a)+a;}
 
 function generateCrash(){
   const r=Math.random();
   if(r<1/30)return rand(90,159);
   if(r<3/30)return rand(50,60);
-  if(r<5/30)return rand(4,15);
-  if(r<7/30)return rand(3,9);
-  if(r<12/30)return rand(1,2);
+  if(r<6/30)return rand(4,15);
+  if(r<8/30)return rand(3,9);
+  if(r<10/30)return rand(1,2);
   return rand(1.2,4.9);
 }
-const rand=(a,b)=>Math.random()*(b-a)+a;
 
 function start(){
-  running=true;mult=1;crash=generateCrash();
+  running=true;
+  mult=1;
+  crash=generateCrash();
   status.innerText="FLYING";
-  if(sound){flyS.currentTime=0;flyS.play();}
+  if(sound) flyS.play();
   tick();
 }
 
 function tick(){
-  if(!running)return;
-  mult+=mult<2?.0025:mult<5?.004:mult<10?.006:mult<20?.008:.01;
+  if(!running) return;
+
+  mult+=mult<2?0.0025:mult<5?0.004:mult<10?0.006:mult<20?0.008:mult<50?0.01:0.012;
+
   multi.innerText=mult.toFixed(2)+"x";
   plane.style.left=(-60+Math.min(mult,25)*26)+"px";
+
   ["A","B"].forEach(t=>{
     if(placed[t]&&!cashed[t]){
       const b=document.getElementById("btn"+t);
       b.className="betbtn yellow";
       b.innerText="CASH "+Math.floor(bets[t]*mult);
-      if(autoX[t]&&mult>=autoX[t])cashOut(t);
+      if(autoX[t] && mult>=autoX[t]) cashOut(t);
     }
   });
-  if(mult>=crash)return end();
+
+  if(mult>=crash){end();return;}
   requestAnimationFrame(tick);
 }
 
@@ -280,20 +265,54 @@ function end(){
   running=false;
   status.innerText="CRASH";
   multi.innerText=crash.toFixed(2)+"x";
-  multi.classList.add("crash-effect");
-  game.classList.add("crashed");
-  if(sound){flyS.pause();crashS.play();}
+  if(sound) crashS.play();
+
   history.unshift(crash.toFixed(2)+"x");
-  if(history.length>15)history.pop();
+  if(history.length>15) history.pop();
   renderHistory();
-  placed={A:false,B:false};cashed={A:false,B:false};
-  setTimeout(()=>{
-    multi.classList.remove("crash-effect");
-    game.classList.remove("crashed");
-    wait();
-  },1200);
+
+  placed={A:false,B:false};
+  cashed={A:false,B:false};
+
+  setTimeout(wait,3000);
 }
 
+function wait(){
+  status.innerText="WAITING";
+  ["A","B"].forEach(t=>{
+    const b=document.getElementById("btn"+t);
+    b.innerText="BET "+t;
+    b.className="betbtn green";
+  });
+  setTimeout(start,3000);
+}
+
+function renderHistory(){
+  historyEl.innerHTML="";
+  history.forEach(x=>{
+    const v=parseFloat(x);
+    const s=document.createElement("span");
+    s.innerText=x;
+    s.className=v<1.5?"low":v<2?"mid":v<5?"high":"mega";
+    historyEl.appendChild(s);
+  });
+}
+
+function updateUI(){bal.innerText=balance}
+
+/* LIVE USERS */
+const names=["Ali","Ahmed","Usman","Hamza","Bilal","Ayan","Zain","Saad","user1827374"];
+setInterval(()=>{
+  const n=names[Math.floor(Math.random()*names.length)];
+  const b=rand(100,900);
+  const m=rand(1.2,6).toFixed(2);
+  const win=Math.random()>0.45;
+  const d=document.createElement("div");
+  d.className="live-item "+(win?"win":"lose");
+  d.innerHTML=`<span>${n}</span><span>${win?"PKR "+Math.floor(b*m)+" @ "+m+"x":"Lost PKR "+b}</span>`;
+  live.appendChild(d);
+  if(live.children.length>8) live.removeChild(live.firstChild);
+},1600);
 function wait(){
   let c=6;
   const i=setInterval(()=>{
@@ -313,19 +332,8 @@ function wait(){
   },1000);
 }
 
-function renderHistory(){
-  historyEl.innerHTML="";
-  history.forEach(x=>{
-    const v=parseFloat(x);
-    const s=document.createElement("span");
-    s.innerText=x;
-    s.className=v<1.5?"low":v<2?"mid":v<5?"high":"mega";
-    historyEl.appendChild(s);
-  });
-}
-function updateUI(){bal.innerText=balance}
-const historyEl=document.getElementById("history");
-updateUI();wait();
+updateUI();
+wait();
 </script>
 </body>
 </html>
